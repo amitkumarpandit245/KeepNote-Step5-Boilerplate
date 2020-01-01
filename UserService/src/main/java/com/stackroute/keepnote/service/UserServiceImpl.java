@@ -2,7 +2,6 @@ package com.stackroute.keepnote.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.stackroute.keepnote.exceptions.UserAlreadyExistsException;
 import com.stackroute.keepnote.exceptions.UserNotFoundException;
 import com.stackroute.keepnote.model.User;
@@ -39,12 +38,12 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User registerUser(User user) throws UserAlreadyExistsException {
-		if (userRepository.existsById(user.getUserId())) {
-			throw new UserAlreadyExistsException("User Already Exists");
+		User register = userRepository.insert(user);
+		if (register != null) {
+			return register;
 		} else {
-			userRepository.save(user);
+			throw new UserAlreadyExistsException("UserAlreadyExistsException");
 		}
-		return user;
 	}
 
 	/*
@@ -53,12 +52,13 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User updateUser(String userId, User user) throws UserNotFoundException {
-		if (!userRepository.existsById(userId)) {
+		User update = userRepository.findById(userId).get();
+		if (user == null) {
 			throw new UserNotFoundException("User Does not Exists");
 		} else {
 			userRepository.save(user);
 		}
-		return user;
+		return update;
 	}
 
 	/*
@@ -67,14 +67,15 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public boolean deleteUser(String userId) throws UserNotFoundException {
-		boolean flag = false;
-		if (!userRepository.existsById(userId)) {
+		User found = userRepository.findById(userId).get();
+		if (found == null) {
 			throw new UserNotFoundException("User Does not Exists");
 		} else {
-			flag = true;
-			userRepository.deleteById(userId);
+			userRepository.delete(found);
 		}
-		return flag;
+
+		return true;
+
 	}
 
 	/*
@@ -83,11 +84,11 @@ public class UserServiceImpl implements UserService {
 	 */
 
 	public User getUserById(String userId) throws UserNotFoundException {
-		if (!userRepository.existsById(userId)) {
+		User found = userRepository.findById(userId).get();
+		if (found == null) {
 			throw new UserNotFoundException("User Does not Exists");
 		} else {
-			return userRepository.findById(userId).get();
+			return found;
 		}
 	}
-
 }
